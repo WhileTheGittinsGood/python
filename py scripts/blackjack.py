@@ -342,8 +342,18 @@ while True:
                 show_all(player, dealer)
                 sleep(1)
                 t -= 1
-            
-            shuffle_deck = True
+                
+            new_game = input('Play another hand, (y)es or (n)o?\n')
+            clear(wait=True)
+
+            if new_game[0].lower() == 'y':
+                playing = True
+                shuffle_deck = True
+                continue
+            else:
+                print('exiting')
+                break
+                
         else:
             new_game = input('Play another hand, (y)es or (n)o?\n')
             clear(wait=True)
@@ -352,7 +362,10 @@ while True:
                 playing = True
                 continue
             else:
+                print('exiting')
                 break
     
         break
-    shuffle_deck = False
+    break
+
+shuffle_deck = False
