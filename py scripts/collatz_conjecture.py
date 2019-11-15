@@ -46,6 +46,7 @@ def collatz(number):
             c += 1
             output(c,n)
     
-    output(c,n)
+    #output(c,n)
     
 collatz(int(input('Enter a starting value for the Collatz Conjecture:')))
+exit()
