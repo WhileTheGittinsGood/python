@@ -337,22 +337,23 @@ while True:
             
             while t > -1:
                 clear(wait=True)
-                print('You have no more chips.')
-                print(f'GAME OVER {t}')
+                print('\nYou have no more chips.')
                 show_all(player, dealer)
+                print(f'\nGAME OVER {t}')
                 sleep(1)
                 t -= 1
-                
-            new_game = input('Play another hand, (y)es or (n)o?\n')
-            clear(wait=True)
 
-            if new_game[0].lower() == 'y':
-                playing = True
-                shuffle_deck = True
-                continue
-            else:
-                print('exiting')
-                break
+            break
+            # new_game = input('Play another hand, (y)es or (n)o?\n')
+            # clear(wait=True)
+
+            # if new_game[0].lower() == 'y':
+            #     playing = True
+            #     shuffle_deck = True
+            #     continue
+            # else:
+            #     print('exiting')
+            #     break
                 
         else:
             new_game = input('Play another hand, (y)es or (n)o?\n')
