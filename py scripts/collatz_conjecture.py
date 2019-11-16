@@ -24,12 +24,12 @@ def collatz(number):
         print(f'\tStep {c}: {n}')
         
         if n == 1:
-            print(f'\nCompleted in: {c} steps')
-            print(f'Time wasted: {c} seconds')
-            print(f'\nMission complete')
+            print(f'\nCompleted in {c} steps\n')
+            #print(f'Time wasted: {c} seconds')
         else:
-            print(f'\nCompleted in: -- steps')
-            print(f'Time wasted: {c} seconds')
+            pass
+            #print(f'\nCompleted in: -- steps')
+            #print(f'Time wasted: {c} seconds')
         
         sleep(1)
         clear(wait=True)
@@ -48,5 +48,5 @@ def collatz(number):
     
     #output(c,n)
     
-collatz(int(input('Enter a starting value for the Collatz Conjecture:')))
+collatz(int(input('\nEnter a starting value for the Collatz Conjecture:')))
 exit()
