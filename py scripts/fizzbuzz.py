@@ -1,5 +1,7 @@
 # FizzBuzz
 
+from time import sleep
+
 def fizzbuzz(num):
 
     n = num
@@ -10,20 +12,24 @@ def fizzbuzz(num):
 
             print('fizzbuzz')
             n -= 1
+            sleep(0.5)
 
         elif n % 3 == 0:
 
             print('fizz')
             n -= 1
+            sleep(0.5)
 
         elif n % 5:
 
             print('buzz')
             n -= 1
+            sleep(0.5)
 
         else:
 
             print(n)
             n -= 1
+            sleep(0.5)
 
 fizzbuzz(int(input('enter a number for fizzbuzz to start with:')))
