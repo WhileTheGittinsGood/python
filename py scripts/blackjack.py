@@ -1,5 +1,5 @@
 import random
-from IPython.display import clear_output as clear
+#from IPython.display import clear_output as clear
 from time import sleep
 
 # Global variables to decide if the game is being played or if the deck needs to be shuffled
@@ -124,11 +124,11 @@ def take_bet(chips):
         
         try:
             chips.bet = int(input(prompt + '\n'))
-            clear(wait=True)
+            #clear(wait=True)
         
         except:
             prompt = f'Please enter an integer, you have {chips.total} chips:'
-            clear(wait=True)
+            #clear(wait=True)
         
         else:
             
@@ -259,7 +259,7 @@ while True:
     #print('Welcome to Blackjack!')
     
     playing = True
-    clear(wait=True)
+    #clear(wait=True)
     
     deck = Deck()
     deck.shuffle()
@@ -283,7 +283,7 @@ while True:
         show_deal(player, dealer)
         
         if player.value == 21:
-            clear(wait=True)
+           #clear(wait=True)
             player_blackjack(player, dealer, chips)
             show_all(player, dealer)
             break
@@ -291,7 +291,7 @@ while True:
         while playing:
             
             hit_or_stay(deck, player)
-            clear()
+            #clear()
 
             shuffle_check(deck)
             
@@ -299,7 +299,7 @@ while True:
             show_deal(player, dealer)
         
             if player.value > 21:
-                clear(wait=True)
+                #clear(wait=True)
                 player_bust(player, dealer, chips)
                 show_all(player, dealer)
                 break
@@ -309,25 +309,25 @@ while True:
             while dealer.value < 17:
                 hit(deck, dealer)
                 shuffle_check(deck)
-                clear(wait=True)
+                #clear(wait=True)
                 print(f'You wagered {chips.bet} chip(s).')
                 show_all(player, dealer)
                 
 
             if dealer.value > 21:
-                clear(wait=True)
+                #clear(wait=True)
                 dealer_bust(player, dealer, chips)
                 show_all(player, dealer)
             elif dealer.value > player.value:
-                clear(wait=True)
+                #clear(wait=True)
                 dealer_wins(player, dealer, chips)
                 show_all(player, dealer)
             elif dealer.value < player.value:
-                clear(wait=True)
+                #clear(wait=True)
                 player_wins(player, dealer, chips)
                 show_all(player, dealer)
             else:
-                clear(wait=True)
+                #clear(wait=True)
                 push(player, dealer, chips)
                 show_all(player, dealer)
 
@@ -336,7 +336,7 @@ while True:
             t = 10
             
             while t > -1:
-                clear(wait=True)
+                #clear(wait=True)
                 print('\nYou have no more chips.')
                 show_all(player, dealer)
                 print(f'\nGAME OVER {t}')
@@ -357,7 +357,7 @@ while True:
                 
         else:
             new_game = input('Play another hand, (y)es or (n)o?\n')
-            clear(wait=True)
+            #clear(wait=True)
 
             if new_game[0].lower() == 'y':
                 playing = True
