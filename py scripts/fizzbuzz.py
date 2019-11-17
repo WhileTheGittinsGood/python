@@ -20,7 +20,7 @@ def fizzbuzz(num):
             n -= 1
             sleep(0.5)
 
-        elif n % 5:
+        elif n % 5 == 0:
 
             print('buzz')
             n -= 1
