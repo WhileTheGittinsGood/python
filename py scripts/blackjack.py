@@ -112,6 +112,7 @@ class Chips:
         
     def blackjack(self):
         self.total += self.bet * 1.5
+        self.total = round(self.total)
 
 # This function asks the user for their wager until the user enters an integer that is less than or equal to
 # the value of their chips
@@ -288,7 +289,7 @@ while True:
             show_all(player, dealer)
             playing = False
 
-        while playing:
+        while playing and player.value < 21:
             
             hit_or_stay(deck, player)
             #clear()
