@@ -286,7 +286,7 @@ while True:
            #clear(wait=True)
             player_blackjack(player, dealer, chips)
             show_all(player, dealer)
-            break
+            playing = False
 
         while playing:
             
