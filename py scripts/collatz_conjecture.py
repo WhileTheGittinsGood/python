@@ -10,11 +10,9 @@
 #   Returns the value of the counter
 
 from time import sleep
-from IPython.display import clear_output as clear
 
 def collatz(number):
 
-    clear()
     n = number
     c = 0
     
@@ -32,7 +30,6 @@ def collatz(number):
             #print(f'Time wasted: {c} seconds')
         
         sleep(1)
-        clear(wait=True)
 
     while n > 1:
         
