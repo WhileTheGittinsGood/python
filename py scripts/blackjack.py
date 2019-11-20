@@ -334,7 +334,7 @@ while True:
 
         if chips.total == 0:
             
-            t = 10
+            t = 3
             
             while t > -1:
                 #clear(wait=True)
@@ -345,16 +345,6 @@ while True:
                 t -= 1
 
             break
-            # new_game = input('Play another hand, (y)es or (n)o?\n')
-            # clear(wait=True)
-
-            # if new_game[0].lower() == 'y':
-            #     playing = True
-            #     shuffle_deck = True
-            #     continue
-            # else:
-            #     print('exiting')
-            #     break
                 
         else:
             new_game = input('Play another hand, (y)es or (n)o?\n')
