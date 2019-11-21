@@ -1,4 +1,5 @@
 import random
+from time import sleep
 
 ranks = ('2','3','4','5','6','7','8','9','10','J','Q','K','A')
 suits = ('\u2661', '\u2662', '\u2664', '\u2667')
@@ -7,6 +8,7 @@ values = {'2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':0, 'J':0,
 playing = True
 bet_placed = False
 wager_placed = False
+discard = False
 
 class Card:
 
@@ -52,7 +54,7 @@ class Hand:
         self.cards = 0
 
     def __str__(self):
-        hand_comp = '\n'
+        hand_comp = ''
         
         for card in self.hand:
             hand_comp += ' ' + card.__str__()
@@ -67,7 +69,7 @@ class Hand:
 
 class Chips:
 
-    def __init__(self, total=100):
+    def __init__(self, total=1000):
         self.total = total
         self.wager = 0
         self.bet = ' '
@@ -109,126 +111,201 @@ def player_or_banker(chips):
         except:
             print('error')
 
-    print(chips.bet)
+    print(f'Bet is {chips.bet}')
 
 def ante_up(chips):
 
     global wager_placed
-    prompt = f'ante up, you have {chips.total} chips: '
+    prompt = f'Place your wager, you have {chips.total} chips: '
 
     while not wager_placed:
         try:
             chips.wager = int(input(prompt))
         except:
-            prompt = f'enter an integer, you have {chips.total}'
+            prompt = f'Enter an integer, you have {chips.total} chips: '
         else:
             if chips.wager > chips.total:
-                prompt = f'max wager {chips.total}'
+                prompt = f'Max wager {chips.total}: '
+            elif chips.wager < 0:
+                prompt = 'Min wager 0: '
             else:
-                print(f'wager is {chips.wager}')
+                print(f'Wagered {chips.wager}')
                 wager_placed = True
 
 
 
 def player_win(chips):
 
-    print('player wins')
+    global discard
+
+    print(f'Player: {player.value} Banker: {banker.value}')
+    print('Player wins')
     if chips.bet == 'player':
         chips.win_wager()
     else:
         chips.lose_wager()
 
+    discard = True
+
 def banker_win(chips):
 
-    print('banker wins')
+    global discard
+
+    print('Banker wins')
+    print(f'Player: {player.value} Banker: {banker.value}')
     if chips.bet == 'banker':
         chips.win_wager()
     else:
         chips.lose_wager()
 
-def check_deal(player, banker, deck):
+    discard = True
 
-    def extra_card(hand, deck):
+def check_win(player, banker, deck):
 
-        hand.add(deck.deal())
+    global discard
 
-    def win_check(player, banker):
-
-        if player.value > banker.value:
-            if player.cards == 2 and banker.cards == 2:
-                print('player natural')
-            else:
-                print('player wins')
-        elif player.value < banker.value:
-            if player.cards == 2 and banker.cards == 2:
-                print('banker natural')
-            else:
-                print('banker wins')
+    if player.value > banker.value:
+        if player.cards == 2 and banker.cards == 2:
+            print('Natural')
+            player_win(chips)
         else:
-            print('tie hand')
-
-        playing = False
-
-    if player.cards == 2 and banker.cards == 2:
-        if player.value >= 8 or banker.value >= 8:
-            win_check(player, banker)
+            player_win(chips)
+    elif player.value < banker.value:
+        if player.cards == 2 and banker.cards == 2:
+            print('Natural')
+            banker_win(chips)
         else:
-            if player.value < 6:
-                extra_card(player, deck)
-
+            banker_win(chips)
     else:
-        
-        if banker.cards == 2:
-            if banker.value <= 2:
-                extra_card(banker, deck)
-            elif banker.value == 3:
-                if player.value != 8:
-                    extra_card(banker, deck)
+        print('Tie hand')
+        discard = True
+
+    #playing = False
+
+def extra_card(hand, deck):
+
+    hand.add(deck.deal())
+
+while True:
+
+    # initialize the deck of 8 cards and chips variables.
+    deck = Deck()
+    chips = Chips()
+
+    # shuffle the deck
+    deck.shuffle()
+
+    while playing:
+
+        banker = Hand()
+        player = Hand()
+
+        # take players wager and bet
+        ante_up(chips)
+        sleep(1)
+        player_or_banker(chips)
+        sleep(1)
+
+        # deal the hand
+        deal_hand(player, banker, deck)
+
+        while not discard:
+
+            print(f'Player: {player} Banker: {banker}')
+            sleep(1)
+            if player.cards == 2 and banker.cards == 2 and player.value != 6 and player.value != 7:
+                if player.value >= 8 or banker.value >= 8:
+                    check_win(player, banker, deck)
                 else:
-                    pass
-            elif banker.value == 4:
-                if player.value in range(2,8):
-                    extra_card(banker, deck)
-                else:
-                    pass
-            elif banker.value == 5:
-                if player.value in range(4,8):
-                    extra_card(banker, deck)
-                else:
-                    pass
-            elif banker.value == 6:
-                if player.value in range(6,8):
-                    extra_card(banker, deck)
-                else:
-                    win_check(player, banker)
+                    extra_card(player, deck)
+
             else:
-                win_check(player, banker)
-        else:
-            win_check(player, banker)
+                
+                if banker.cards == 2:
+                    if banker.value <= 2:
+                        extra_card(banker, deck)
+                    elif banker.value == 3:
+                        if player.value != 8:
+                            extra_card(banker, deck)
+                        else:
+                            check_win(player, banker, deck)
+                    elif banker.value == 4:
+                        if player.value in range(2,8):
+                            extra_card(banker, deck)
+                        else:
+                            check_win(player, banker, deck)
+                    elif banker.value == 5:
+                        if player.value in range(4,8):
+                            extra_card(banker, deck)
+                        else:
+                            check_win(player, banker, deck)
+                    elif banker.value == 6:
+                        if player.value in range(6,8):
+                            extra_card(banker, deck)
+                        else:
+                            check_win(player, banker, deck)
+                    else:
+                        check_win(player, banker, deck)
+                else:
+                    check_win(player, banker, deck)
 
 
-deck = Deck()
-# print(deck)
-deck.shuffle()
-# print(deck)
 
-player = Hand()
-banker = Hand()
-chips = Chips()
+        while discard:
+            
 
-player_or_banker(chips)
-ante_up(chips)
+            if chips.total >0:
+                new_hand = input('enter y to play another hand\n')
 
-deal_hand(player, banker, deck)
+                if new_hand[0].lower() == 'y':
+                    playing = True
+                    bet_placed = False
+                    wager_placed = False
+                    discard = False
+                else:
+                    playing = False
+                    bet_placed = False
+                    wager_placed = False
+                    discard = False
+            else:
+                print('BANKRUPT')
+                playing = False
+                bet_placed = False
+                wager_placed = False
+                discard = False
 
-print(f'Player: {player.value}{player}')
-print(f'Banker: {banker.value}{banker}')
-check_deal(player, banker, deck)
+    break
 
-print(f'Player: {player.value}{player}')
-print(f'Banker: {banker.value}{banker}')
-check_deal(player, banker, deck)
 
-print(f'Player: {player.value}{player}')
-print(f'Banker: {banker.value}{banker}')
-check_deal(player, banker, deck)
+
+
+
+
+# deck = Deck()
+# # print(deck)
+# deck.shuffle()
+# # print(deck)
+
+# player = Hand()
+# banker = Hand()
+# chips = Chips()
+
+# player_or_banker(chips)
+# ante_up(chips)
+
+# deal_hand(player, banker, deck)
+
+# print(f'Player: {player.value}{player}')
+# print(f'Banker: {banker.value}{banker}')
+# check_deal(player, banker, chips, deck)
+
+# print(f'Player: {player.value}{player}')
+# print(f'Banker: {banker.value}{banker}')
+# check_deal(player, banker, chips, deck)
+
+# print(f'Player: {player.value}{player}')
+# print(f'Banker: {banker.value}{banker}')
+# check_deal(player, banker, chips, deck)
+
+# print(chips.total)
+# print(playing)

@@ -271,7 +271,6 @@ while True:
     
     while not shuffle_deck:
         
-        print('Welcome to Blackjack!')
         show_none()
         
         take_bet(chips)
@@ -281,28 +280,33 @@ while True:
 
         shuffle_check(deck)
         deal(player, dealer, deck)
-        show_deal(player, dealer)
+        sleep(1)
         
         if player.value == 21:
            #clear(wait=True)
-            player_blackjack(player, dealer, chips)
             show_all(player, dealer)
+            player_blackjack(player, dealer, chips)
             continue
 
         while playing and player.value < 21:
+
+            show_deal(player, dealer)
             
             hit_or_stay(deck, player)
             #clear()
 
             shuffle_check(deck)
             
-            print(f'You wagered {chips.bet} chip(s).')
             show_deal(player, dealer)
+            print(f'You wagered {chips.bet} chip(s).')
+
+            sleep(1)
         
             if player.value > 21:
                 #clear(wait=True)
-                player_bust(player, dealer, chips)
                 show_all(player, dealer)
+                player_bust(player, dealer, chips)
+                sleep(3)
                 break
 
         if player.value <= 21:
@@ -311,26 +315,30 @@ while True:
                 hit(deck, dealer)
                 shuffle_check(deck)
                 #clear(wait=True)
-                print(f'You wagered {chips.bet} chip(s).')
                 show_all(player, dealer)
+                print(f'You wagered {chips.bet} chip(s).')
                 
 
             if dealer.value > 21:
                 #clear(wait=True)
-                dealer_bust(player, dealer, chips)
                 show_all(player, dealer)
+                dealer_bust(player, dealer, chips)
+                sleep(3)
             elif dealer.value > player.value:
                 #clear(wait=True)
-                dealer_wins(player, dealer, chips)
                 show_all(player, dealer)
+                dealer_wins(player, dealer, chips)
+                sleep(3)
             elif dealer.value < player.value:
                 #clear(wait=True)
-                player_wins(player, dealer, chips)
                 show_all(player, dealer)
+                player_wins(player, dealer, chips)
+                sleep(3)
             else:
                 #clear(wait=True)
-                push(player, dealer, chips)
                 show_all(player, dealer)
+                push(player, dealer, chips)
+                sleep(3)
 
         if chips.total == 0:
             
@@ -338,8 +346,8 @@ while True:
             
             while t > -1:
                 #clear(wait=True)
-                print('\nYou have no more chips.')
                 show_all(player, dealer)
+                print('\nYou have no more chips.')
                 print(f'\nGAME OVER {t}')
                 sleep(1)
                 t -= 1
