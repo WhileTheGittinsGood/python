@@ -275,37 +275,3 @@ while True:
                 discard = False
 
     break
-
-
-
-
-
-
-# deck = Deck()
-# # print(deck)
-# deck.shuffle()
-# # print(deck)
-
-# player = Hand()
-# banker = Hand()
-# chips = Chips()
-
-# player_or_banker(chips)
-# ante_up(chips)
-
-# deal_hand(player, banker, deck)
-
-# print(f'Player: {player.value}{player}')
-# print(f'Banker: {banker.value}{banker}')
-# check_deal(player, banker, chips, deck)
-
-# print(f'Player: {player.value}{player}')
-# print(f'Banker: {banker.value}{banker}')
-# check_deal(player, banker, chips, deck)
-
-# print(f'Player: {player.value}{player}')
-# print(f'Banker: {banker.value}{banker}')
-# check_deal(player, banker, chips, deck)
-
-# print(chips.total)
-# print(playing)
