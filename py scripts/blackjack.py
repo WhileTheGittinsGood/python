@@ -4,7 +4,11 @@ from time import sleep
 
 # Global variables to decide if the game is being played or if the deck needs to be shuffled
 playing = True
-shuffle_deck = False
+reshuffle = False
+game_start = True
+doubled = False
+
+hand_count = 0
 
 # These are the tuples and dictionary that is used to create cards and decipher their values
 
@@ -30,19 +34,13 @@ class Card:
 
 class Deck:
     
-    global shuffle_deck
-    
     def __init__(self):
         self.deck = []
-        for suit in suits:
-            for rank in ranks:
-                self.deck.append(Card(rank,suit))
-                
-    #def __str__(self):
-        #deck_comp = ''
-        #for card in self.deck:
-            #deck_comp += '\n' + card.__str__()
-        #return deck_comp
+        for n in range(8):
+            for suit in suits:
+                for rank in ranks:
+                    self.deck.append(Card(rank,suit))
+        self.dis_deck = []
     
     def __str__(self):
         deck_comp = ''
@@ -57,17 +55,20 @@ class Deck:
         return deck_comp
     
     def shuffle(self):
-        for i in range(5):
-            random.shuffle(self.deck)
-            shuffle_deck = False
+        self.deck += self.dis_deck
+        self.dis_deck = []
+        random.shuffle(self.deck)
+        print('The deck has been shuffled.')
+        #print(str(len(deck.deck)) + ' cards in deck')
+
             
     def deal(self):
-        
-        try:
-            top_card = self.deck.pop()
-            return top_card
-        except IndexError:
-            shuffle_deck = True
+        top_card = self.deck.pop()
+        return top_card
+
+    def discard(self, player, dealer):
+        self.dis_deck.append(player)
+        self.dis_deck.append(dealer)
 
 # This class creates a hand object which has a method that allows the hand to grab a card from the deck and
 # add it to itself. Cards added to the hand are stored in a list.
@@ -82,7 +83,7 @@ class Hand:
     def __str__(self):
         hand_comp = ''
         for card in self.hand:
-            hand_comp += '\n' + card.__str__()
+            hand_comp += card.__str__() + ' '
         return hand_comp
     
     def add_card(self,card):
@@ -114,258 +115,266 @@ class Chips:
         self.total += (self.bet * 1.5)
         self.total = round(self.total)
 
+    def double_down(self):
+        self.bet *= 2
+
 # This function asks the user for their wager until the user enters an integer that is less than or equal to
 # the value of their chips
 
-def take_bet(chips):
-    
-    prompt = f'Place your wager, you have {chips.total} chips:'
-    
+def take_bet(chips):    
+    prompt = f'Place your wager, you have {chips.total} chips: '
     while True:
-        
         try:
-            chips.bet = int(input(prompt + '\n'))
-            #clear(wait=True)
-        
+            chips.bet = int(input(prompt))
+            #clear(wait=True)        
         except:
-            prompt = f'Please enter an integer, you have {chips.total} chips:'
-            #clear(wait=True)
-        
-        else:
-            
+            prompt = f'Enter an integer, you have {chips.total} chips:'
+            #clear(wait=True)        
+        else:            
             if chips.bet > chips.total:
-                prompt = f'Sorry, you only have {chips.total} chips to wager:'
+                prompt = f'You only have {chips.total} chips to wager:'
             elif chips.bet < 1:
                 prompt = f'Wager must be a positive amount, you have {chips.total}:'
             
             else:
-                print(f'You wagered {chips.bet} chip(s).')
+                # print(f'You wagered {chips.bet} chip(s).')
                 break
+
+
+def double_down(chips, deck, hand):
+    global doubled
+    while True:
+        try:
+            n = input('Would you like to double down and hit, (y)es or (n)o? ')
+        
+            if n[0].lower() == 'y':
+                chips.double_down()
+                hit(deck, hand)
+                doubled = True
+                break
+            elif n[0].lower() == 'n':
+                break
+            else:
+                continue
+        except:
+            print('Enter (y) or (n)')
 
 # Simple function that takes the deck and a hand as a parameter and adds a card from the deck that is passed
 # to the card that is passed.
-
 def hit(deck, hand):
-    
     hand.add_card(deck.deal())
     hand.ace_adjust()
 
 # This is repeated after the hand is dealt to ask the player if they would like to hit or stay
-
 def hit_or_stay(deck, hand):
-    
     global playing
-    
     while True:
-        #h = input(f'You have {hand.value}. Would you like to (h)it or (s)tay?')
-        h = input('Would you like to (h)it or (s)tay?\n')
-        
+        #h = input(f'You have {hand.value}. Would you like to (h)it or (s)tay? ')
+        h = input('Would you like to hit, (y)es or (n)o? ')
         try:
-            if h[0].lower() == 'h':
+            if h[0].lower() == 'y':
                 hit(deck, hand)
-            elif h[0].lower() == 's':
-                print('Player stays.')
+            elif h[0].lower() == 'n':
+                # print('Player stays.')
                 playing = False
             else:
                 continue
             break
         except:
-            continue
-            
-    print(f'You have {hand.value}.')
+            print('Enter (y) or (n)')
 
 # The following functions are used when either player or dealer reach a victory condition.
 # The functions print out the winner and adjust the players chips accordingly.
-
-def player_blackjack(player, dealer, chips):
-    
-    print('Blackjack!')
+def blackjack(player, dealer, chips):
+    print(f'Blackjack! Win {round(chips.bet * 1.5)} chips.')
     chips.blackjack()
+    print(f'{chips.total} chip(s) in bank.\n')
 
-def player_bust(player, dealer, chips):
-    
-    print('Player bust')
-    chips.lose_bet()
-
-def player_wins(player, dealer, chips):
-    
-    print('Player wins')
+def win_hand(player, dealer, chips):
+    print(f'Win {chips.bet} chip(s).')
     chips.win_bet()
+    print(f'{chips.total} chip(s) in bank.\n')
 
-def dealer_bust(player, dealer, chips):
-    
-    print('Dealer bust, Player wins')
-    chips.win_bet()
-
-def dealer_wins(player, dealer, chips):
-    
-    print('Dealer wins')
+def lose_hand(player, dealer, chips):
+    print(f'Lose {chips.bet} chip(s).')
     chips.lose_bet()
+    print(f'{chips.total} chip(s) in bank.\n')
     
 def push(player, dealer, chips):
-    
-    print('Push')
+    print('Push.')
+    print(f'{chips.total} chip(s) in bank.\n')
 
 # The following functions are used after cards are dealt to display the cards
-
-def show_none():
-
-    print(f'\nDealer:')
-    print('\n')
-    print('')
+def show_deal(player, dealer):    
+    print(f'Dealer shows: {dealer.hand[1].value}')
+    print(f'XX {dealer.hand[1]}')
     
-    print(f'\nPlayer:')
-    print('\n')
-    print('')
-
-def show_deal(player, dealer):
-    
-    print(f'\nDealer shows: {dealer.hand[1].value}')
-    print('\nXX ')
-    print(dealer.hand[1])
-    
-    print(f'\nPlayer has: {player.value}')
-    print('\n' + player.__str__())
+    print(f'Player has: {player.value}')
+    print(player.__str__())
 
 def show_all(player, dealer):
+    print(f'Dealer has: {dealer.value}')
+    print(dealer.__str__())
     
-    print(f'\nDealer has: {dealer.value}')
-    print('\n' + dealer.__str__())
-    
-    print(f'\nPlayer has: {player.value}')
-    print('\n' + player.__str__())
+    print(f'Player has: {player.value}')
+    print(player.__str__())
 
-def deal(player, dealer, deck):
-    
+# Deals 4 cards alternating from the player to the dealer 
+def deal(player, dealer, deck):    
+    global hand_count
     for num in range(4):
         if num % 2 == 0:
             player.add_card(deck.deal())
         else:
             dealer.add_card(deck.deal())
+    hand_count += 1
 
+# This function is ran after a hand is finished
+# If the deck has less cards remaining than specified
+# by its num variable it will set the reshuffle boolean
+# to True else it will set the playing boolean to true
 def shuffle_check(deck):
-    
-    global shuffle_deck
-    
-    try:
-        deck.deck[0]
-    except IndexError:
-        print('No more cards in the deck. Resuffle')
-        shuffle_deck = True
+    global reshuffle
+    global playing
+
+    num = 20
+
+    if len(deck.deck) < num:
+        reshuffle = True
     else:
-        pass
+        playing = True
 
-while True:
+# This function is called after the hand is completed.
+# User input decides if another hand is dealt.
+def new_game():
     
-    #print('Welcome to Blackjack!')
-    
-    playing = True
-    #clear(wait=True)
-    
-    deck = Deck()
-    deck.shuffle()
-    
-    chips = Chips()
-    
-    #sleep(3)
-    
-    while not shuffle_deck:
-        
-        show_none()
-        
-        take_bet(chips)
+    while True:
+        n = input('\nPlay another hand, (y)es or (n)o? ')        
 
-        dealer = Hand()
-        player = Hand()
-
-        shuffle_check(deck)
-        deal(player, dealer, deck)
-        sleep(1)
-        
-        if player.value == 21:
-           #clear(wait=True)
-            show_all(player, dealer)
-            player_blackjack(player, dealer, chips)
-            continue
-
-        while playing and player.value < 21:
-
-            show_deal(player, dealer)
-            
-            hit_or_stay(deck, player)
-            #clear()
-
-            shuffle_check(deck)
-            
-            show_deal(player, dealer)
-            print(f'You wagered {chips.bet} chip(s).')
-
-            sleep(1)
-        
-            if player.value > 21:
-                #clear(wait=True)
-                show_all(player, dealer)
-                player_bust(player, dealer, chips)
-                sleep(3)
-                break
-
-        if player.value <= 21:
-            
-            while dealer.value < 17:
-                hit(deck, dealer)
+        try:
+            if n[0].lower() == 'y':
                 shuffle_check(deck)
-                #clear(wait=True)
-                show_all(player, dealer)
-                print(f'You wagered {chips.bet} chip(s).')
-                
-
-            if dealer.value > 21:
-                #clear(wait=True)
-                show_all(player, dealer)
-                dealer_bust(player, dealer, chips)
-                sleep(3)
-            elif dealer.value > player.value:
-                #clear(wait=True)
-                show_all(player, dealer)
-                dealer_wins(player, dealer, chips)
-                sleep(3)
-            elif dealer.value < player.value:
-                #clear(wait=True)
-                show_all(player, dealer)
-                player_wins(player, dealer, chips)
-                sleep(3)
-            else:
-                #clear(wait=True)
-                show_all(player, dealer)
-                push(player, dealer, chips)
-                sleep(3)
-
-        if chips.total == 0:
-            
-            t = 3
-            
-            while t > -1:
-                #clear(wait=True)
-                show_all(player, dealer)
-                print('\nYou have no more chips.')
-                print(f'\nGAME OVER {t}')
-                sleep(1)
-                t -= 1
-
-            break
-                
-        else:
-            new_game = input('Play another hand, (y)es or (n)o?\n')
-            #clear(wait=True)
-
-            if new_game[0].lower() == 'y':
-                playing = True
-                continue
-            else:
-                print('exiting')
                 break
-    
-        break
-    break
+            elif n[0].lower() == 'n':
+                print('exiting')
+                exit()
+            else:
+                continue
+        except:
+            print('Enter (y) or (n)')
 
-shuffle_deck = False
+def repeat_bet(chips):
+    global doubled
+
+    if doubled:
+        chips.bet /= 2
+        chips.bet = round(chips.bet)
+        doubled = False
+
+    while True:
+        r = input(f'Repeat bet {chips.bet} chip(s), (y)es or (n)o? ')
+
+        try:
+            if r[0].lower() == 'y':
+                chips.bet = chips.bet
+                break
+            elif r[0].lower() == 'n':
+                take_bet(chips)
+                break
+            else:
+                continue
+        except:
+            print('Enter (y)es or (n)o')
+
+
+
+# This is where the game logic begins
+while True:
+    # Setup chips object. Default value is 100
+    chips = Chips()
+
+    while game_start:
+        
+        #print('Welcome to Blackjack!')
+        
+        reshuffle = False
+        playing = True
+        
+        # Setup deck object. There are 8 decks when a deck object is initialized (416 cards)
+        deck = Deck()
+        deck.shuffle()
+        
+        while not reshuffle:
+            
+            if chips.bet == 0:
+                take_bet(chips)
+            else:
+                repeat_bet(chips)
+
+            dealer = Hand()
+            player = Hand()
+
+            deal(player, dealer, deck)
+            print(f'Hands dealt: {hand_count}')
+                
+            # Player was dealt a blackjack
+            if player.value == 21:
+                show_all(player, dealer)
+                blackjack(player, dealer, chips)
+                sleep(3)
+                continue
+
+            if dealer.hand[1].value == 11:
+                print('INSURANCE FUNCTION')
+
+            if player.value == 11:
+                show_deal(player, dealer)
+                double_down(chips, deck, player)
+            
+
+            # Player was dealt anything except blackjack
+            while playing and player.value < 21:
+
+                show_deal(player, dealer)
+
+                # Asks player if they want to hit or stay
+                hit_or_stay(deck, player)
+
+                # Player hit and busts
+                if player.value > 21:
+                    show_deal(player, dealer)
+                    lose_hand(player, dealer, chips)
+                    break
+
+            # Player stays
+            if player.value <= 21:
+                
+                while dealer.value < 17:
+                    hit(deck, dealer)
+
+                show_all(player, dealer)
+
+                if dealer.value > 21:
+                    # show_all(player, dealer)
+                    win_hand(player, dealer, chips)
+                elif dealer.value > player.value:
+                    # show_all(player, dealer)
+                    lose_hand(player, dealer, chips)
+                elif dealer.value < player.value:
+                    # show_all(player, dealer)
+                    win_hand(player, dealer, chips)
+                else:
+                    # show_all(player, dealer)
+                    push(player, dealer, chips)
+
+            # Went all in and lost
+            if chips.total == 0:                
+                show_all(player, dealer)
+                print('\nBANKRUPT')
+                print('\nGAME OVER')
+                exit()
+
+                    
+            # Asks to deal another hand
+            else:
+                new_game()
