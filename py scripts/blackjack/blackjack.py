@@ -1,4 +1,5 @@
 import random
+import log
 
 # Global variables to decide if the game is being played or if the deck needs to be shuffled
 playing = True
@@ -6,8 +7,8 @@ reshuffle = False
 game_start = True
 doubled = False
 
-total_hand_count = 0
-shoe_hand_count = 0
+hands_dealt_total = 0
+hands_dealt_shoe = 0
 
 # These are the tuples and dictionary that is used to create cards and decipher their values
 
@@ -136,6 +137,19 @@ def take_bet(chips):
             else:
                 break
 
+# Deals 4 cards alternating from the player to the dealer 
+def deal(player, dealer, deck):    
+    global hands_dealt_total
+    global hands_dealt_shoe
+    for num in range(4):
+        if num % 2 == 0:
+            player.add_card(deck.deal())
+        else:
+            dealer.add_card(deck.deal())
+    hands_dealt_total += 1
+    hands_dealt_shoe += 1
+    player.ace_adjust()
+    dealer.ace_adjust()
 
 def double_down(chips, deck, hand):
     global doubled
@@ -156,23 +170,6 @@ def double_down(chips, deck, hand):
                 continue
         except:
             print('Enter (y) or (n)')
-
-def insurance(chips):
-
-    while True:
-        try:
-            i = input('Would you like insurance against dealer blackjack, (y)es or (n)o?')
-
-            if i[0].lower() == 'y':
-                chips.insurance = chips.bet/2
-                chips.insurance = round(chips.insurance)
-                break
-            elif i[0].lower() == 'n':
-                break
-            else:
-                continue
-        except:
-            print('Enter (y)es or (n)o')
 
 # Simple function that takes the deck and a hand as a parameter and adds a card from the deck that is passed
 # to the card that is passed.
@@ -196,6 +193,52 @@ def hit_or_stay(deck, hand):
             break
         except:
             print('Enter (y) or (n)')
+
+# Function executes when the deallers face up card is an A
+# Insurance is 1/2 of the wager and pays 2:1
+def insurance(chips):
+
+    while True:
+        i = input('Would you like insurance against dealer blackjack, (y)es or (n)o?')
+        try:
+            if i[0].lower() == 'y':
+                chips.insurance = chips.bet/2
+                chips.insurance = round(chips.insurance)
+                break
+            elif i[0].lower() == 'n':
+                break
+            else:
+                continue
+        except:
+            print('Enter (y)es or (n)o')
+
+# If the player has already played a hand this function will ask if you
+# would like to repeat the same wager
+def repeat_bet(chips):
+    global doubled
+
+    if doubled:
+        chips.bet /= 2
+        chips.bet = round(chips.bet)
+        doubled = False
+
+    while True:
+        r = input(f'Repeat bet {chips.bet} chip(s), (y)es or (n)o? ')
+
+        try:
+            if r[0].lower() == 'y':
+                if chips.bet <= chips.total:
+                    chips.bet = chips.bet
+                else:
+                    chips.bet = chips.total
+                break
+            elif r[0].lower() == 'n':
+                take_bet(chips)
+                break
+            else:
+                continue
+        except:
+            print('Enter (y)es or (n)o')
 
 # This function will be used in the victory condtion functions that follow.
 # It has been added to visually simplify the game in terminal.
@@ -232,6 +275,7 @@ def push(chips):
 def win_insurance(chips):
     print(f'Win insurance: {chips.insurance*2}')
     chips.win_in()
+    playing = False
 
 # The following functions are used after cards are dealt to display the cards
 def show_deal(player, dealer):    
@@ -248,18 +292,6 @@ def show_all(player, dealer):
     print(f'Player has: {player.value}')
     print(player.__str__())
 
-# Deals 4 cards alternating from the player to the dealer 
-def deal(player, dealer, deck):    
-    global total_hand_count
-    global shoe_hand_count
-    for num in range(4):
-        if num % 2 == 0:
-            player.add_card(deck.deal())
-        else:
-            dealer.add_card(deck.deal())
-    total_hand_count += 1
-    shoe_hand_count += 1
-
 # This function is ran after a hand is finished
 # If the deck has less cards remaining than specified
 # by its num variable it will set the reshuffle boolean
@@ -267,15 +299,13 @@ def deal(player, dealer, deck):
 def shuffle_check(deck):
     global reshuffle
     global playing
-    global shoe_hand_count
+    global hands_dealt_shoe
 
     num = 20
 
     if len(deck.deck) < num:
         reshuffle = True
-        shoe_hand_count = 0
-
-
+        hands_dealt_shoe = 0
     else:
         playing = True
 
@@ -298,33 +328,6 @@ def new_game():
                 continue
         except:
             print('Enter (y) or (n)')
-
-def repeat_bet(chips):
-    global doubled
-
-    if doubled:
-        chips.bet /= 2
-        chips.bet = round(chips.bet)
-        doubled = False
-
-    while True:
-        r = input(f'Repeat bet {chips.bet} chip(s), (y)es or (n)o? ')
-
-        try:
-            if r[0].lower() == 'y':
-                if chips.bet <= chips.total:
-                    chips.bet = chips.bet
-                else:
-                    chips.bet = chips.total
-                break
-            elif r[0].lower() == 'n':
-                take_bet(chips)
-                break
-            else:
-                continue
-        except:
-            print('Enter (y)es or (n)o')
-
 
 
 # This is where the game logic begins
@@ -355,7 +358,7 @@ while True:
                 repeat_bet(chips)
 
             deal(player, dealer, deck)
-            print(f'Total hands dealt: {total_hand_count} Hands this shoe: {shoe_hand_count}')
+            print(f'Total hands dealt: {hands_dealt_total} Hands this shoe: {hands_dealt_shoe}')
                 
             # Player was dealt a blackjack
             if player.value == 21:
@@ -371,7 +374,10 @@ while True:
                     if chips.insurance > 0:
                         win_insurance(chips)
                         lose_hand(chips)
-                        playing = False
+                        continue
+                    else:
+                        lose_hand(chips)
+                        continue
                 else:
                     if chips.insurance > 0:
                         chips.lose_in()
